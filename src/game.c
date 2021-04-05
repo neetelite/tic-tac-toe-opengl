@@ -13,7 +13,62 @@ match_reset(Match *match)
     match->player_turn = i32_rand(player_x, player_o+1);
     match->player_win = player_null;
 
-    mem_set(match->board.cell, player_null, sizeof(match->board.cell));
+    Board *board = &match->board;
+    board->filled_count = 0;
+    mem_set(board->cell, player_null, sizeof(match->board.cell));
+}
+
+void
+match_check(Match *match)
+{
+    Board *board = &match->board;
+
+	for(u8 player = 1; player < 3; player++)
+	{
+		//horizontal check
+		for(u8 r = 0; r < 3; r++)
+		{
+			if(board->cell[r][0] == player &&
+				board->cell[r][1] == player &&
+				board->cell[r][2] == player)
+			{
+				match->status = match_status_finished;
+				match->player_win = player;
+			}
+		}
+
+		//vertical check
+		for(u8 c = 0; c < 3; c++)
+		{
+			if(board->cell[0][c] == player &&
+				board->cell[1][c] == player &&
+				board->cell[2][c] == player)
+			{
+				match->status = match_status_finished;
+				match->player_win = player;
+			}
+		}
+		//diagonal check
+		if(board->cell[0][0] == player &&
+			board->cell[1][1] == player &&
+			board->cell[2][2] == player)
+		{
+			match->status = match_status_finished;
+			match->player_win = player;
+		}
+		//diagonal check
+		if(board->cell[0][2] == player &&
+			board->cell[1][1] == player &&
+			board->cell[2][0] == player)
+		{
+			match->status = match_status_finished;
+			match->player_win = player;
+		}
+	}
+
+	if(board->filled_count >= 9) match->status = match_status_finished;
+
+	return;
 }
 
 void
@@ -21,6 +76,10 @@ match_update(Match *match)
 {
     struct Input_Mouse *mouse = &input.mice[0];
     Board *board = &match->board;
+
+    /* Match reset */
+    if(key_pressed(key_r)) match_reset(match);
+    if(match->status != match_status_playing) return;
 
 	//check if inside
 	if(mouse->pos.x > board->pos.x && mouse->pos.x < board->pos.x + board->dim.x &&
@@ -44,6 +103,8 @@ match_update(Match *match)
 			}
 		}
 	}
+
+    match_check(match);
 }
 
 void
@@ -123,6 +184,6 @@ game_draw(Game *game)
 void
 game_update(Game *game)
 {
-    if(game->match.status == match_status_playing) match_update(&game->match);
+    match_update(&game->match);
     game_draw(game);
 }

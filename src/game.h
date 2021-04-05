@@ -14,6 +14,7 @@ typedef struct Board
 {
     Vec2 pos;
     Vec2 dim;
+    Vec4 color;
 
     PlayerID cell[3][3];
     Vec2 cell_dim;

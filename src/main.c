@@ -29,6 +29,9 @@ main(void)
     struct TimeLimiter time_limiter = {0};
     time_limiter_init(&time_limiter, 30.0);
 
+    /* Random */
+    rand_init();
+
     Game game = {0};
     game_init(&game);
 

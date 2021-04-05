@@ -1,9 +1,17 @@
+Player *
+player_get(Game *game, PlayerID id)
+{
+    Player *result = NULL;
+    result = &game->players[id-1];
+    return(result);
+}
+
 void
 match_reset(Match *match)
 {
     match->status = match_status_playing;
-    match->turn = i32_rand(player_o, player_x);
-    match->winner = player_null;
+    match->player_turn = i32_rand(player_x, player_o+1);
+    match->player_win = player_null;
 
     mem_set(match->board.cell, player_null, sizeof(match->board.cell));
 }
@@ -11,13 +19,38 @@ match_reset(Match *match)
 void
 match_update(Match *match)
 {
+    struct Input_Mouse *mouse = &input.mice[0];
+    Board *board = &match->board;
+
+	//check if inside
+	if(mouse->pos.x > board->pos.x && mouse->pos.x < board->pos.x + board->dim.x &&
+	   mouse->pos.y > board->pos.y && mouse->pos.y < board->pos.y + board->dim.y)
+	{
+		u8 cell_x = (mouse->pos.x - board->pos.x) / board->cell_dim.x;
+		u8 cell_y = (mouse->pos.y - board->pos.y) / board->cell_dim.y;
+
+		u8 *cell = (u8 *)board;
+
+		if(button_pressed(button_left))
+		{
+			if(!board->cell[cell_y][cell_x])
+			{
+				board->cell[cell_y][cell_x] = match->player_turn;
+
+				++board->filled_count;
+
+				if(match->player_turn == player_x) match->player_turn = player_o;
+				else match->player_turn = player_x;
+			}
+		}
+	}
 }
 
 void
 game_init(Game *game)
 {
-    game->players[player_x].color = VEC4_COLOR_RED;
-    game->players[player_o].color = VEC4_COLOR_BLUE;
+    player_get(game, player_x)->color = VEC4_COLOR_RED;
+    player_get(game, player_o)->color = VEC4_COLOR_BLUE;
 
     Match *match = &game->match;
     match_reset(match);
@@ -42,8 +75,8 @@ game_draw(Game *game)
         case match_status_playing: background_color = VEC4_COLOR_BLACK; break;
         case match_status_finished:
         {
-            if(match->winner == player_null) background_color = VEC4_COLOR_WHITE;
-            else background_color = game->players[match->winner].color;
+            if(match->player_win == player_null) background_color = VEC4_COLOR_WHITE;
+            else background_color = player_get(game, match->player_win)->color;
         }
     }
     gl_viewport_color_set(background_color);
@@ -74,7 +107,12 @@ game_draw(Game *game)
 			if (i > 0) cell_start.y -= spacing / 2;
 			if (i < 2) cell_end.y += spacing / 2;
 
-			Vec4 color = game->players[board->cell[i][j]].color;
+            PlayerID cell_player = board->cell[i][j];
+
+            Vec4 color;
+            if(cell_player != player_null) color = player_get(game, cell_player)->color;
+            else color = vec4_mf(VEC4_COLOR_WHITE, 0.5);
+
             rec = REC2(cell_start, cell_end);
             box = box2_from_rec2(rec);
             box2_draw(&box, 1.0, color);

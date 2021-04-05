@@ -18,6 +18,8 @@ typedef struct Board
 
     PlayerID cell[3][3];
     Vec2 cell_dim;
+
+    u32 filled_count;
 } Board;
 
 typedef enum MatchStatus
@@ -31,8 +33,8 @@ typedef struct Match
     Board board;
     MatchStatus status;
 
-    PlayerID turn;
-    PlayerID winner;
+    PlayerID player_turn;
+    PlayerID player_win;
 } Match;
 
 typedef struct Game

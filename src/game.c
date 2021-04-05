@@ -110,8 +110,8 @@ match_update(Match *match)
 void
 game_init(Game *game)
 {
-    player_get(game, player_x)->color = VEC4_COLOR_RED;
-    player_get(game, player_o)->color = VEC4_COLOR_BLUE;
+    player_get(game, player_x)->color = vec4_mf(VEC4_COLOR_RED,  0.6);
+    player_get(game, player_o)->color = vec4_mf(VEC4_COLOR_BLUE, 0.6);
 
     Match *match = &game->match;
     match_reset(match);
@@ -121,7 +121,7 @@ game_init(Game *game)
     board->dim = VEC2(board->cell_dim.x*3, board->cell_dim.y*3);
     board->pos = VEC2((os_context.dim.x/2) - (board->dim.x/2),
                       (os_context.dim.y/2) - (board->dim.y/2));
-    board->color = VEC4_COLOR_WHITE;
+    board->color = vec4_mf(VEC4_COLOR_WHITE, 0.1);
 }
 
 void
@@ -172,7 +172,7 @@ game_draw(Game *game)
 
             Vec4 color;
             if(cell_player != player_null) color = player_get(game, cell_player)->color;
-            else color = vec4_mf(VEC4_COLOR_WHITE, 0.5);
+            else color = vec4_mf(VEC4_COLOR_WHITE, 0.2);
 
             rec = REC2(cell_start, cell_end);
             box = box2_from_rec2(rec);

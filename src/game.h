@@ -1,6 +1,7 @@
 typedef enum PlayerID
 {
     player_null,
+
     player_x,
     player_o,
 } PlayerID;
